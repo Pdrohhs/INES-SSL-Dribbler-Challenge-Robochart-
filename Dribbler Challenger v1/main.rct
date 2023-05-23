@@ -1,0 +1,69 @@
+interface Move {
+	Rotate_robot (  ang_robot : real )
+	Move_robot (  X : real ,  Y : real )
+	Go_to_point ( X : real , Y : real )
+	Move (X: real, Y: real)
+}
+
+interface RobotOn {
+	event RobotOn: string
+}
+
+stm stm0 {
+	requires Move 
+	
+	
+	var ang_robot : real , ang_ball : real
+
+	var getDr: real*real
+	var getAng: real
+	var frame: string
+	initial i0
+	state start {
+	}
+	state DriveToBall {
+		entry getAng = Get_ang ( frame ) ; Rotate_robot ( getAng ) ; wait ( 1 ) ; getDr = Get_dr ( frame ) ; Move ( getDr [ 1 ] , getDr [ 2 ] ) ; wait ( 1 )
+	}
+	uses RobotOn transition t0 {
+		from i0
+		to start
+	}
+	transition t1 {
+		from start
+		to DriveToBall
+	trigger 
+	
+	RobotOn ? frame
+	}
+
+state RotateOnBall {
+		entry getAng = Get_ang ( frame ) ; Rotate_robot ( getAng ) ; wait ( 1 )
+	}
+	state GoToGate {
+		entry getDr = Get_dr ( frame ) ; Move ( getDr [ 1 ] , getDr [ 2 ] ) ; wait ( 1 )
+	}
+	transition t2 {
+		from DriveToBall
+		to RotateOnBall
+	}
+	transition t3 {
+		from RotateOnBall
+		to GoToGate
+	}
+var count : int = 0
+	final f0
+	transition t5 {
+		from GoToGate
+		to RotateOnBall
+		condition count < 5
+		action count = count + 1
+	}
+	transition t4 {
+		from GoToGate
+		to f0
+		condition count == 5
+	}
+}
+function Get_dr(frame:string):real*real{}
+function Get_ang(frame:string):real{}
+
