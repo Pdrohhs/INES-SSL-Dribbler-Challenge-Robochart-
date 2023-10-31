@@ -4,7 +4,7 @@ Modeling State Machines for solving autonomous robotics navigation challenges
 # Objective
 Develop in state machines a solution for Technical challenge dribbling using Eclipse
 
-## Tools Requerements
+## Tools Requirements
 - [Java](https://www.java.com/pt-BR/download/help/linux_x64_install.html)
 - [Eclipse](https://www.eclipse.org/)
 
