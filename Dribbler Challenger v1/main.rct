@@ -2,7 +2,7 @@ interface Move {
 	Rotate_robot (  ang_robot : real )
 	Move_robot (  X : real ,  Y : real )
 	Go_to_point ( X : real , Y : real )
-	Move (X: real, Y: real)
+	Move (X: int)
 }
 
 interface RobotOn {
@@ -12,8 +12,9 @@ interface RobotOn {
 stm stm0 {
 	requires Move 
 	
-	
+	var v1 : vector ( int , 6 )
 	var ang_robot : real , ang_ball : real
+	var index : int
 
 	var getDr: real*real
 	var getAng: real
@@ -22,7 +23,8 @@ stm stm0 {
 	state start {
 	}
 	state DriveToBall {
-		entry getAng = Get_ang ( frame ) ; Rotate_robot ( getAng ) ; wait ( 1 ) ; getDr = Get_dr ( frame ) ; Move ( getDr [ 1 ] , getDr [ 2 ] ) ; wait ( 1 )
+		entry v1 = Set_Move ( ) ; Move ( v1[index]) ; wait ( 1 ) ; index = index + 1
+		//; getAng = Get_ang ( frame ) ; Rotate_robot ( getAng ) ; wait ( 1 ) ; getDr = Get_dr ( frame ) ; Move ( getDr [ 1 ] , getDr [ 2 ] ) ; wait ( 1 )
 	}
 	uses RobotOn transition t0 {
 		from i0
@@ -33,6 +35,7 @@ stm stm0 {
 		to DriveToBall
 	trigger 
 	
+	
 	RobotOn ? frame
 	}
 
@@ -40,7 +43,8 @@ state RotateOnBall {
 		entry getAng = Get_ang ( frame ) ; Rotate_robot ( getAng ) ; wait ( 1 )
 	}
 	state GoToGate {
-		entry getDr = Get_dr ( frame ) ; Move ( getDr [ 1 ] , getDr [ 2 ] ) ; wait ( 1 )
+		//entry getDr = Get_dr ( frame ) ; Move ( getDr [ 1 ] , getDr [ 2 ] ) ; wait ( 1 )
+		entry Move (v1[index]); wait(1); index = index+1
 	}
 	transition t2 {
 		from DriveToBall
@@ -66,4 +70,5 @@ var count : int = 0
 }
 function Get_dr(frame:string):real*real{}
 function Get_ang(frame:string):real{}
+function Set_Move():int*int*int*int*int*int{}
 
