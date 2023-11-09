@@ -71,10 +71,7 @@ stm stm0 {
 state RotateOnBall {
 		entry getAng = Get_ang ( frame ) ; Rotate_robot ( getAng ) ; wait ( 1 )
 	}
-	state GoToGate {
-		//entry getDr = Get_dr ( frame ) ; Move ( getDr [ 1 ] , getDr [ 2 ] ) ; wait ( 1 )
-		entry Move (v1[index]); wait(1); index = index+1
-	}
+	
 	transition t2 {
 		from GoToBall
 		to RotateOnBall
@@ -87,13 +84,13 @@ state RotateOnBall {
 	var count : int = 0
 	final f0
 	transition t5 {
-		from GoToGate
+		from DriveToPoint
 		to start
 		condition count < 5
 		action count = count + 1
 	}
 	transition t4 {
-		from GoToGate
+		from DriveToPoint
 		to f0
 		condition count == 5
 	}
