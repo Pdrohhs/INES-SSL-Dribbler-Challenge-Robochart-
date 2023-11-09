@@ -1,8 +1,28 @@
+datatype Position {
+	pos: real*real
+}
+ 
+datatype RawFrame {
+	cam: real
+}
+
+datatype Ball {
+	pos: Position
+}
+
+datatype ProcessedFrame {
+	ballPos: Position
+}
+
 interface Move {
 	Rotate_robot (  ang_robot : real )
 	Move_robot (  X : real ,  Y : real )
-	Go_to_point ( X : real , Y : real )
+	Go_to_point (p: Position)
 	Move (X: int)
+}
+
+interface FRAME{
+	event UpdateFrame
 }
 
 interface RobotOn {
@@ -13,17 +33,25 @@ stm stm0 {
 	requires Move 
 	
 	var v1 : vector ( int , 6 )
+	//v1 : [|p1 , p2, p3, p4, p5, p6|]
 	var ang_robot : real , ang_ball : real
 	var index : int
+	var ballPosition : ProcessedFrame
+	const dist : nat
 
-	var getDr: real*real
+	//var getDr: real*real
 	var getAng: real
 	var frame: string
 	initial i0
 	state start {
 	}
-	state DriveToBall {
-		entry v1 = Set_Move ( ) ; Move ( v1[index]) ; wait ( 1 ) ; index = index + 1
+	state GoToBall{
+		entry ballPosition = searchBall ( frame ) ; Go_to_point ( ballPosition.ballPos ) ; wait ( 1 ) 
+	}
+	
+	state DriveToPoint {
+		//entry v1 = Set_Move( ) ; Move( v1[index]) ; wait( 1 ) ; index = index + 1
+		entry v1 = Set_Move() ; Move( v1[index]) ; wait( 1 ) ; index = index + 1
 		//; getAng = Get_ang ( frame ) ; Rotate_robot ( getAng ) ; wait ( 1 ) ; getDr = Get_dr ( frame ) ; Move ( getDr [ 1 ] , getDr [ 2 ] ) ; wait ( 1 )
 	}
 	uses RobotOn transition t0 {
@@ -32,8 +60,9 @@ stm stm0 {
 	}
 	transition t1 {
 		from start
-		to DriveToBall
+		to GoToBall
 	trigger 
+	
 	
 	
 	RobotOn ? frame
@@ -47,18 +76,19 @@ state RotateOnBall {
 		entry Move (v1[index]); wait(1); index = index+1
 	}
 	transition t2 {
-		from DriveToBall
+		from GoToBall
 		to RotateOnBall
 	}
 	transition t3 {
-		from RotateOnBall
-		to GoToGate
+		from DriveToPoint
+		to GoToBall
+	condition dist > 10
 	}
-var count : int = 0
+	var count : int = 0
 	final f0
 	transition t5 {
 		from GoToGate
-		to RotateOnBall
+		to start
 		condition count < 5
 		action count = count + 1
 	}
@@ -67,8 +97,16 @@ var count : int = 0
 		to f0
 		condition count == 5
 	}
+transition t6 {
+		from RotateOnBall
+		to DriveToPoint
+	}
 }
 function Get_dr(frame:string):real*real{}
-function Get_ang(frame:string):real{}
+function Get_ang(frame:string):real{}     // Verificar os parametros necessarios para calcular o angulo
 function Set_Move():int*int*int*int*int*int{}
+//function Position():int*int*int*int*int*int{}
+function process (frm: RawFrame ) : ProcessedFrame {}
+function searchBall(frm2: string) : ProcessedFrame{}
+function calcAngle(p: Position) : real{}
 
