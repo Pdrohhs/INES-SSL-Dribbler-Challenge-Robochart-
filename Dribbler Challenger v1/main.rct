@@ -1,5 +1,13 @@
+datatype Angle {
+	ang : real
+}
+
 datatype Position {
 	pos: real*real
+}
+
+datatype Robot {
+	pos: Position
 }
  
 datatype RawFrame {
@@ -11,13 +19,14 @@ datatype Ball {
 }
 
 datatype ProcessedFrame {
-	ballPos: Position
+	pos: Position
+	ang: Angle
 }
 
 interface Move {
-	Rotate_robot (  ang_robot : real )
-	Move_robot (  X : real ,  Y : real )
-	Go_to_point (p: Position)
+	Rotate_robot (ang: Angle )
+	Move_robot (X: real ,  Y : real )
+	Go_to_point (p: Position , ang: Angle)
 	Move (X: int)
 }
 
@@ -37,21 +46,24 @@ stm stm0 {
 	var ang_robot : real , ang_ball : real
 	var index : int
 	var ballPosition : ProcessedFrame
+	var robotPosition : ProcessedFrame
+	var ballAng : ProcessedFrame
+	var robotAng: ProcessedFrame
+	var Distance : real
 	const dist : nat
 
-	//var getDr: real*real
-	var getAng: real
+	var getAng: Angle
 	var frame: string
 	initial i0
 	state start {
 	}
 	state GoToBall{
-		entry ballPosition = searchBall ( frame ) ; Go_to_point ( ballPosition.ballPos ) ; wait ( 1 ) 
+		entry ballPosition = searchBall(frame) ; Go_to_point ( ballPosition.pos , ballAng.ang) ; wait ( 1 ) 
 	}
 	
 	state DriveToPoint {
 		//entry v1 = Set_Move( ) ; Move( v1[index]) ; wait( 1 ) ; index = index + 1
-		entry v1 = Set_Move() ; Move( v1[index]) ; wait( 1 ) ; index = index + 1
+		entry v1 = Set_Move() ; Move( v1[index]) ; wait( 1 ) ; Distance = Dist(robotPosition, ballPosition) ;index = index + 1
 		//; getAng = Get_ang ( frame ) ; Rotate_robot ( getAng ) ; wait ( 1 ) ; getDr = Get_dr ( frame ) ; Move ( getDr [ 1 ] , getDr [ 2 ] ) ; wait ( 1 )
 	}
 	uses RobotOn transition t0 {
@@ -69,7 +81,8 @@ stm stm0 {
 	}
 
 state RotateOnBall {
-		entry getAng = Get_ang ( frame ) ; Rotate_robot ( getAng ) ; wait ( 1 )
+		//entry getAng = Get_ang(frame) ; Rotate_robot ( getAng ) ; wait ( 1 )
+		entry getAng = calcAngle(robotPosition, ballPosition) ; Rotate_robot(getAng) ; wait ( 1 )
 	}
 	
 	transition t2 {
@@ -79,7 +92,7 @@ state RotateOnBall {
 	transition t3 {
 		from DriveToPoint
 		to GoToBall
-	condition dist > 10
+	condition Distance > 120
 	}
 	var count : int = 0
 	final f0
@@ -100,10 +113,16 @@ transition t6 {
 	}
 }
 function Get_dr(frame:string):real*real{}
-function Get_ang(frame:string):real{}     // Verificar os parametros necessarios para calcular o angulo
+//function Get_ang(frame:string):real{}     // Verificar os parametros necessarios para calcular o angulo
 function Set_Move():int*int*int*int*int*int{}
 //function Position():int*int*int*int*int*int{}
 function process (frm: RawFrame ) : ProcessedFrame {}
 function searchBall(frm2: string) : ProcessedFrame{}
-function calcAngle(p: Position) : real{}
-
+function calcAngle(p1: ProcessedFrame , p2: ProcessedFrame) : Angle{
+	postcondition result == AngleTwoPoints(p1,p2)
+	}
+function Dist(p1: ProcessedFrame, p2: ProcessedFrame) : real{
+	postcondition result == DistTwoPoints(p1,p2)
+	}
+function DistTwoPoints(p1: ProcessedFrame, p2: ProcessedFrame) : real{}
+function AngleTwoPoints(p1: ProcessedFrame, p2: ProcessedFrame) : Angle {}
