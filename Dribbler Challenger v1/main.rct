@@ -56,16 +56,15 @@ stm stm0 {
 	var frame: string
 	initial i0
 	state start {
+	entry v1 = Set_Move ( )
 	}
 	state GoToBall{
 		entry ballPosition = searchBall(frame) ; Go_to_point ( ballPosition.pos , ballAng.ang) ; wait ( 1 ) 
 	}
 	
 	state DriveToPoint {
-		//entry v1 = Set_Move( ) ; Move( v1[index]) ; wait( 1 ) ; index = index + 1
-		entry v1 = Set_Move() ; Move( v1[index]) ; wait( 1 ) ; Distance = Dist(robotPosition, ballPosition) ;index = index + 1
-		//; getAng = Get_ang ( frame ) ; Rotate_robot ( getAng ) ; wait ( 1 ) ; getDr = Get_dr ( frame ) ; Move ( getDr [ 1 ] , getDr [ 2 ] ) ; wait ( 1 )
-	}
+		entry 
+		Move ( v1 [ index ] ) ; wait ( 1 ) ; Distance = Dist ( robotPosition , ballPosition ) ; index = index + 1 ; count = count + 1	}
 	uses RobotOn transition t0 {
 		from i0
 		to start
@@ -96,16 +95,16 @@ state RotateOnBall {
 	}
 	var count : int = 0
 	final f0
-	transition t5 {
-		from DriveToPoint
-		to start
-		condition count < 5
-		action count = count + 1
-	}
+
 	transition t4 {
 		from DriveToPoint
 		to f0
 		condition count == 5
+	}
+	transition t7 {
+		from DriveToPoint
+		to RotateOnBall
+		condition not Distance > 120
 	}
 transition t6 {
 		from RotateOnBall
