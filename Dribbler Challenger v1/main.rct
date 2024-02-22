@@ -50,13 +50,13 @@ stm stm0 {
 	var ballAng : ProcessedFrame
 	var robotAng: ProcessedFrame
 	var Distance : real
-	const dist : nat
+	const dist : real
 
 	var getAng: Angle
 	var frame: string
 	initial i0
 	state start {
-	entry v1 = Set_Move ( )
+
 	}
 	state GoToBall{
 		entry ballPosition = searchBall(frame) ; Go_to_point ( ballPosition.pos , ballAng.ang) ; wait ( 1 ) 
@@ -69,21 +69,6 @@ stm stm0 {
 		from i0
 		to start
 	}
-	transition t1 {
-		from start
-		to GoToBall
-	trigger 
-	
-	
-	
-	RobotOn ? frame
-	}
-
-state RotateOnBall {
-		//entry getAng = Get_ang(frame) ; Rotate_robot ( getAng ) ; wait ( 1 )
-		entry getAng = calcAngle(robotPosition, ballPosition) ; Rotate_robot(getAng) ; wait ( 1 )
-	}
-	
 	transition t2 {
 		from GoToBall
 		to RotateOnBall
@@ -91,11 +76,14 @@ state RotateOnBall {
 	transition t3 {
 		from DriveToPoint
 		to GoToBall
-	condition Distance > 120
+	condition Distance > dist
 	}
 	var count : int = 0
-	final f0
-
+	state RotateOnBall {
+		//entry getAng = Get_ang(frame) ; Rotate_robot ( getAng ) ; wait ( 1 )
+		entry getAng = calcAngle(robotPosition, ballPosition) ; Rotate_robot(getAng) ; wait ( 1 )
+	}
+	
 	transition t4 {
 		from DriveToPoint
 		to f0
@@ -104,16 +92,33 @@ state RotateOnBall {
 	transition t7 {
 		from DriveToPoint
 		to RotateOnBall
-		condition not Distance > 120
+		condition not Distance > dist
 	}
 transition t6 {
 		from RotateOnBall
 		to DriveToPoint
 	}
+final f0
+
+	transition t5 {
+		from start
+		to WaitingFrame
+		trigger RobotOn ? frame
+	}
+state WaitingFrame {
+	entry v1 = Set_Move (frame)
+	
+	}
+transition t1 {
+		from WaitingFrame
+		to GoToBall
+	}
 }
 function Get_dr(frame:string):real*real{}
 //function Get_ang(frame:string):real{}     // Verificar os parametros necessarios para calcular o angulo
-function Set_Move():int*int*int*int*int*int{}
+function Set_Move(frm: string):int*int*int*int*int*int{
+	
+}
 //function Position():int*int*int*int*int*int{}
 function process (frm: RawFrame ) : ProcessedFrame {}
 function searchBall(frm2: string) : ProcessedFrame{}
